@@ -7,8 +7,8 @@ import {
 import About from './pages/About.js';
 import Game from './pages/Game.js';
 import Home from './pages/Home.js';
+import Lobby from './pages/Lobby.js';
 import React from 'react';
-import Room from './pages/Room.js';
 
 export default function App() {
   return (
@@ -16,9 +16,9 @@ export default function App() {
       <div className="router-content">
         <Router>
           <Switch>
+            <Route path="/lobby" children={<Lobby />} />
+            <Route path="/game" children={<Game />} />
             <Route path="/about" children={<About />} />
-            <Route path="/room/:room" children={<Room />} />
-            <Route path="/game/:room" children={<Game />} />
             <Route path="/" children={<Home />} />
           </Switch>
         </Router>

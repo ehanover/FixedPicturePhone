@@ -2,3 +2,7 @@
   /* background-color: pink; */
   margin: 0 auto;
 }
+
+#button-join {
+  margin-bottom: 50px; /* extends background coloring */
+}
