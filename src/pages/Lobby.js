@@ -1,55 +1,63 @@
 import './Lobby.css';
 import { useCookies } from 'react-cookie';
+import { useHistory } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import clientConfig from '../configClient.json';
 import io from 'socket.io-client';
 
+
 export default function Lobby() {
 
+  const history = useHistory();
   // eslint-disable-next-line
-  const [cookie, setCookie, removeCookie] = useCookies(); // re-render on every cookie change
+  const [cookie, setCookie, removeCookie] = useCookies();
   const [socket, setSocket] = useState(null);
   const [players, setPlayers] = useState(["Loading..."]);
+  const name = cookie.name;
+  const admin = cookie.admin;
 
   useEffect(() => {
     setSocket(io(clientConfig.serverUrl));
-    // return () => {
-    //   socket.disconnect();
-    // }
   }, []);
 
   useEffect(() => {
     if(!socket) return;
 
     socket.on("connect", () => {
-      // console.log("Lobby.js - socket connect");
-      socket.emit("lobbyPlayerJoined", {"name": cookie.name});
+      socket.emit("lobbyConnect", {"name": name});
     });
-    socket.on("lobbyPlayersUpdate", (data) => { // Update the list of players in the room
-      console.log("lobbyPlayersUpdate d.p=" + data.players);
+    socket.on("lobbyUpdate", (data) => {
       setPlayers(data.players);
     });
-    socket.on("disconnect", () => {
-      // console.log("Room.js - socket disconnect");
+    socket.on("lobbyFinish", (data) => {
+      // console.log("game is starting");
+      socket.disconnect();
+      history.push("/game")
     });
-  }, [socket, players, cookie]); // all this is running a ton of times?
+    socket.on("disconnect", () => {
 
-  function adminControlsClick(e) {
-    console.log("starting game");
-  }
+    });
+    return () => socket.disconnect();
+  // eslint-disable-next-line
+  }, [socket]); // is all this running a bunch of times? related to events
 
   let adminControls;
-  if(cookie.name.includes("than")) {
-    adminControls = <button onClick={adminControlsClick} className="pure-button pure-button-primary">Start game</button>
+  if(admin === "true") {
+    adminControls = <button onClick={adminControlsStart} className="pure-button pure-button-primary">Start game</button>
   } else {
-    adminControls = null;
+    adminControls = <p>Waiting for the leader to start the game...</p>;
+  }
+
+  function adminControlsStart(e) {
+    axios.post(clientConfig.serverUrl + "/lobbyFinishRequest", {"name": name});
   }
 
   return (
     <div className="Room">
-      <h3>Players in lobby:</h3>
+      <h3>Players in the lobby:</h3>
       <ul>
-        {players.map((p, i) =>
+        {players.map((p, i) => 
           <li key={i}>{p}</li>
         )}
       </ul>

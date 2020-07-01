@@ -9,7 +9,7 @@ import clientConfig from '../configClient.json';
 export default function Home() {
 
   const history = useHistory();
-  const [name, setName] = useState("bob");
+  const [name, setName] = useState("ethan");
   const [roomCode, setRoomCode] = useState("ABCD");
   // eslint-disable-next-line
   const [cookie, setCookie, removeCookie] = useCookies(); // re-render on every cookie change
@@ -17,13 +17,11 @@ export default function Home() {
   function formSubmit(e) {
     e.preventDefault();
     console.log("Home.js formSubmit()");
-    axios.post(clientConfig.serverUrl + "/home", {"name": name, "roomCode": roomCode}
-      // , {
-      //   "Access-Control-Allow-Origin": "*",
-      //   "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept"
-      // }
+    axios.post(clientConfig.serverUrl + "/lobbyJoin", {"name": name, "roomCode": roomCode}
       ).then(res => {
         setCookie("name", name);
+        setCookie("room", roomCode);
+        setCookie("admin", res.data.admin.toString());
         history.push("/lobby");
       }).catch(err => {
         if(err.response.status === 400) {
