@@ -1,5 +1,5 @@
 import './Lobby.css';
-import { useCookies } from 'react-cookie';
+// import { useCookies } from 'react-cookie';
 import { useHistory } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -7,16 +7,19 @@ import clientConfig from '../configClient.json';
 import io from 'socket.io-client';
 
 
-export default function Lobby() {
+export default function Lobby(props) {
 
   const history = useHistory();
   // eslint-disable-next-line
-  const [cookie, setCookie, removeCookie] = useCookies();
+  // const [cookie, setCookie, removeCookie] = useCookies();
   const [socket, setSocket] = useState(null);
   const [players, setPlayers] = useState(["Loading..."]);
-  const name = cookie.name;
-  const admin = cookie.admin;
+  // const name = cookie.name;
+  // const admin = cookie.admin;
+  const name = sessionStorage.getItem("name");
+  const admin = sessionStorage.getItem("admin");
 
+  // console.log("Lobby my name is " + name);
   useEffect(() => {
     setSocket(io(clientConfig.serverUrl));
   }, []);

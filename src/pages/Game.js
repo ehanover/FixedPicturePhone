@@ -1,104 +1,103 @@
 import './Game.css';
-import { useCookies } from 'react-cookie';
 import React, { useState, useEffect } from 'react';
 import clientConfig from '../configClient.json';
 import io from 'socket.io-client';
+import MyCanvas from '../components/MyCanvas';
 
 // const socket = io(clientConfig.serverUrl);
+export default function Game(props) {
 
-export default function Game() {
-
-  // eslint-disable-next-line
-  const [cookie, setCookie, removeCookie] = useCookies();
-  const [socket, setSocket] = useState(io(clientConfig.serverUrl));
-  const [taskQueue, setTaskQueue] = useState([]);
-  const name = cookie.name;
-  // const admin = cookie.admin;
+  const [socket, setSocket] = useState(null);
+  const [currentTask, setCurrentTask] = useState(null);
+  const [captionText, setCaptionText] = useState("");
+  const name = sessionStorage.getItem("name");
 
   useEffect(() => {
-    // setSocket(io(clientConfig.serverUrl));
-    // socket.emit("gameConnect", {"name": name});
-    return () => {
-      socket.disconnect();
-    }
+    setSocket(io(clientConfig.serverUrl));
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
     if(!socket) return;
+    // console.log("useEffect() socket binding, currentTask=" + currentTask);
 
     socket.on("connect", () => {
       socket.emit("gameConnect", {"name": name});
     });
-    socket.on("gameTaskUpdate", (data) => {
-      if(data.name === name || data.name === "*") { // This update is relevant to me
-        // console.log("Updating task queue...");
-        setTaskQueue(taskQueue.concat([data.task]));
-        // console.log("Queue was updated, taskQueue.length=" + taskQueue.length);
-        // console.log("Queue was updated, queue[0].type=" + taskQueue[0].type);
-      }
+    socket.on("gameTaskNew", (data) => {
+      console.log("socket updating currentTask");
+      setCurrentTask(data.task);
+    });
+    socket.on("gameTaskShouldRequestUpdate", () => {
+      console.log("socket requesting a new task");
+      socket.emit("gameTaskRequestUpdate");
+    });
+    socket.on("gameOver", () => {
+      console.log("GAME OVER!");
+      // TODO navigate to a new screen
     });
     socket.on("disconnect", () => {
 
     });
   }, [socket]);
 
-  function taskQueueSubmit() {
-    let taskToSubmit = taskQueue[0];
-    socket.emit("gameTaskFinish", {"name": name});
+  function taskSubmit(data) {
+    let taskToSubmit = currentTask;
+    updateAfterSubmit();
+    if(taskToSubmit.type === "taskCaptionInitial" || taskToSubmit.type === "taskCaption") {
+      console.log("taskSubmit() submitting caption=" + data);
+      socket.emit("gameTaskFinish", {"name": name, "caption": data, "id": taskToSubmit.id, "type": taskToSubmit.type});
+    } else if(taskToSubmit.type === "taskDraw") {
+      console.log("taskSubmit() submitting drawing");
+      socket.emit("gameTaskFinish", {"name": name, "drawing": data, "id": taskToSubmit.id, "type": taskToSubmit.type});
+    } else {
+      console.log("taskSubmit() ERROR submitting invalid task");
+    }
   }
 
-  const taskCaptionInitial = <div>
-    <p>Enter a funny caption that someone will have to draw</p>
-    <input id="taskCaptionInitial-text" type="text" size="25"/>
-  </div>;
+  function updateAfterSubmit() {
+    // console.log("updateAfterSubmit()");
+    setCaptionText("");
+    setCurrentTask(null);
+  }
 
-  const taskCaption = <div>
-    <p>Write a caption for this drawing: </p>
-    <canvas id="taskCaption-canvas"></canvas>
-    <input id="taskCaption-text" type="text" size="25"/>
-  </div>;
+  function renderTask() {
+    console.log("renderTask() with type=" + currentTask.type);
+    if(currentTask.type === "taskCaptionInitial") 
+      return <div>
+          <p>Enter a funny caption that someone will have to draw: </p>
+          <input id="taskCaption-text" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
+          <br />
+          <button onClick={() => taskSubmit(captionText)} className="pure-button pure-button-primary">Submit</button>
+        </div>;
 
-  const taskDraw = <div>
-    <p>Make a drawing with this caption: </p>
-    <p><i>TODO caption</i></p>
-    <canvas id="taskDraw-canvas"></canvas>
-  </div>;
-  // serialize canvas: https://stackoverflow.com/questions/30758228
+    if(currentTask.type === "taskCaption")
+      return <div>
+          <p>Write a caption for this drawing: </p>
+          <MyCanvas drawing={currentTask.drawing} />
+          <input id="taskCaption-text" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
+          <br />
+          <button onClick={() => taskSubmit(captionText)} className="pure-button pure-button-primary">Submit</button>
+        </div>;
 
-  // let currentTask = <p>currentTask is null</p>;
-  // console.log("queue=" + taskQueue);
-  // if(taskQueue.length > 0) {
-  //   let firstTaskType = taskQueue[0].type;
-  //   console.log("ftt=" + firstTaskType);
-  //   if(firstTaskType === "taskCaptionInitial") {
-  //     currentTask = taskCaptionInitial;
-  //   } else if(firstTaskType === "taskCaption") {
-  //       currentTask = taskCaption;
-  //   } else if(firstTaskType === "taskDraw") {
-  //       currentTask = taskDraw;
-  //   }
-  // }
-  // console.log("taskQueue.length=" + taskQueue.length);
+    if(currentTask.type === "taskDraw") 
+      return <div>
+          <p>Make a drawing that has this caption: </p>
+          <p><i>{currentTask.caption}</i></p>
+          <MyCanvas onSubmit={(d) => taskSubmit(d)}/>
+        </div>;
+
+    return <p>No match for task render</p>;
+  }
+
 
   return (
     <div className="Game">
       <p>Game in progress</p>
 
-      {(taskQueue.length > 1) ? <p>Tasks in queue: {taskQueue.length}</p> : <br />}
-
-      {(taskQueue.length > 0) ? 
-          taskQueue[0].type === "taskCaption" ? taskCaption :
-            taskQueue[0].type === "taskDraw" ? taskDraw :
-              taskQueue[0].type === "taskCaptionInitial" ? taskCaptionInitial : <p>Unknown taskS</p>
-        : <p>too short</p>
-      }
+      {(currentTask !== null) ? renderTask() : <p>Waiting for other players to finish their tasks...</p>}
 
       <br />
-      {(taskQueue.length === 0)
-        ? <p>Waiting for other players to finish their tasks...</p>
-        : <button onClick={taskQueueSubmit} className="pure-button pure-button-primary">Submit</button>
-      }
-
     </div>
   );
 }

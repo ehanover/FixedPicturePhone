@@ -2,6 +2,7 @@ var express = require("express");
 var cors = require("cors");
 var parser = require("body-parser");
 var serverUtil = require("./serverUtil.js");
+var serverConfig = require("./serverConfig.json");
 
 var port = process.env.PORT || 3001;
 var app = express();
@@ -14,7 +15,8 @@ var app = express();
 // });
 
 app.use(cors({
-  origin: "http://192.168.0.225:3000" // TODO move to serverConfig.json
+  // origin: "http://192.168.0.225:3000" // TODO move to serverConfig.json
+  origin: serverConfig.clientUrl
 }));
 app.use(parser.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
 app.use(parser.json()); // parse application/json
@@ -24,7 +26,7 @@ var server = app.listen(port, () => { // Might have to add 0.0.0.0 as second arg
 });
 var io = require("socket.io")(server);
 
-const roomCode = "ABCD";
+const roomCode = serverConfig.roomCode;
 let game = new serverUtil.Game(roomCode);
 
 
@@ -32,10 +34,16 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "Hello world" });
 });
 
+app.get("/info", (req, res) => {
+  const obj = {
+    "game": game
+  };
+  res.status(200).json(obj);
+});
+
 app.post("/lobbyJoin", (req, res) => { // A player is joining a game
   let name = req.body.name;
   let room = req.body.roomCode;
-  // console.log("/home POST: Connection to room by name=" + name);
 
   if(roomCode === room) {
     if(game.getPlayerNames().includes(name)) {
@@ -52,23 +60,14 @@ app.post("/lobbyJoin", (req, res) => { // A player is joining a game
 app.post("/lobbyFinishRequest", (req, res) => {
   if(!game.startGame(req.body.name)) return; // TODO add other game start checks here
 
-  console.log("The game is starting");
+  // console.log("The game is starting");
   io.sockets.emit("lobbyFinish"); // This redirect users to the /game page
   // game.generateFirstTasks();
 });
 
-app.get("/status", (req, res) => {
-  let statusJson = {
-    "names": game.getPlayerNames(),
-    "state": game.state
-  };
-  res.status(200).json(statusJson);
-});
-
-
 
 io.on("connection", (socket) => {
-  // console.log("A user connected");
+  // console.log("New socket connection");
   let player;
 
 
@@ -88,16 +87,33 @@ io.on("connection", (socket) => {
       console.log("Connect unknown!");
       return;
     }
-
     console.log("Game join name=" + player.name);
-    let task = game.getNextTask(player);
-    let taskJson = game.getTaskJson(task);
-    console.log("taskJson.type=" + taskJson.type);
-    socket.emit("gameTaskUpdate", {"name": name, "task": taskJson});
+    socket.emit("gameTaskShouldRequestUpdate");
   });
   socket.on("gameTaskFinish", (data) => {
-    game.taskFinish(player, data);
-    // TODO broadcast task update
+    // console.log("gameTaskFinish with name=" + data.name + ", type=" + data.type);
+    player.busy = false;
+    const gameOver = game.taskFinish(player, data);
+    if(gameOver) {
+      console.log("GAME OVER!");
+      io.sockets.emit("gameOver");
+    } else {
+      // setTimeout(() => {
+      io.sockets.emit("gameTaskShouldRequestUpdate") // Tell all players to request a task update
+      // }, 500);
+    }
+  });
+  socket.on("gameTaskRequestUpdate", (data) => {
+    if(player.busy) 
+      return;
+    let taskJson = game.getNextTask(player);
+    if(taskJson === null)
+      return;
+
+    console.log("Sending a new task to player with name=" + player.name + ", type=" + taskJson.type);
+    // player.numTasks++;
+    socket.emit("gameTaskNew", {"name": player.name, "task": taskJson});
+    player.busy = true;
   });
 
 
@@ -114,6 +130,7 @@ io.on("connection", (socket) => {
       // console.log("Users in room: " + game.getPlayerNames());
     } else if(game.state === game.states.PLAYING) {
       console.log("Disconnect IN GAME!");
+      // TODO handle mid-game disconnections
     }
   });
 

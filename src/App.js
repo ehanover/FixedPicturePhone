@@ -8,6 +8,7 @@ import About from './pages/About.js';
 import Game from './pages/Game.js';
 import Home from './pages/Home.js';
 import Lobby from './pages/Lobby.js';
+import Test from './pages/Test.js';
 import React from 'react';
 
 export default function App() {
@@ -19,7 +20,9 @@ export default function App() {
             <Route path="/lobby" children={<Lobby />} />
             <Route path="/game" children={<Game />} />
             <Route path="/about" children={<About />} />
+            <Route path="/test" children={<Test/>} />
             <Route path="/" children={<Home />} />
+            {/* TODO rename Home to Join */}
           </Switch>
         </Router>
       </div>
