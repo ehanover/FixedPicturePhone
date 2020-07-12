@@ -1,10 +1,10 @@
 import './Game.css';
 import React, { useState, useEffect } from 'react';
-import clientConfig from '../configClient.json';
+import configClient from '../configClient.json';
 import io from 'socket.io-client';
 import MyCanvas from '../components/MyCanvas';
 
-// const socket = io(clientConfig.serverUrl);
+// const socket = io(configClient.serverUrl);
 export default function Game(props) {
 
   const [socket, setSocket] = useState(null);
@@ -13,7 +13,7 @@ export default function Game(props) {
   const name = sessionStorage.getItem("name");
 
   useEffect(() => {
-    setSocket(io(clientConfig.serverUrl));
+    setSocket(io(configClient.serverUrl));
     return () => socket.disconnect();
   }, []);
 

@@ -2,7 +2,7 @@ var express = require("express");
 var cors = require("cors");
 var parser = require("body-parser");
 var serverUtil = require("./serverUtil.js");
-var serverConfig = require("./serverConfig.json");
+var serverConfig = require("./configServer.json");
 
 var port = process.env.PORT || 3001;
 var app = express();
