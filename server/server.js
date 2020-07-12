@@ -65,6 +65,17 @@ app.post("/lobbyFinishRequest", (req, res) => {
   // game.generateFirstTasks();
 });
 
+app.get("/results", (req, res) => {
+  if(game.state != game.states.OVER)
+    res.end(400);
+
+  let ret = {"taskSequences": []};
+  game.taskSequences.forEach(s => {
+    ret.taskSequences.push(s.getResultsDict());
+  });
+  res.status(200).send(ret);
+});
+
 
 io.on("connection", (socket) => {
   // console.log("New socket connection");
@@ -98,9 +109,7 @@ io.on("connection", (socket) => {
       console.log("GAME OVER!");
       io.sockets.emit("gameOver");
     } else {
-      // setTimeout(() => {
       io.sockets.emit("gameTaskShouldRequestUpdate") // Tell all players to request a task update
-      // }, 500);
     }
   });
   socket.on("gameTaskRequestUpdate", (data) => {

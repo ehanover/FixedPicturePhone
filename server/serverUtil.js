@@ -155,6 +155,15 @@ class TaskSequence {
   isDone() {
     return this.numDone >= this.num;
   }
+
+  getResultsDict() {
+    return {
+      "id": this.id,
+      "captions": this.captions,
+      "drawings": this.drawings,
+      "completerNames": this.completers.map(p => p.name)
+    };
+  }
 }
 
 module.exports = { Game, Player }
