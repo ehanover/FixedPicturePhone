@@ -8,6 +8,7 @@ import MyCanvas from '../components/MyCanvas';
 export default function Finish() {
 
   const [results, setResults] = useState(null);
+  const canvasSize = Math.min(550, parseInt( (window.innerWidth < 800) ? window.innerWidth*0.80 : window.innerWidth*0.35));
 
   useEffect(() => {
     console.log("Finish.js loading game over results");
@@ -42,7 +43,7 @@ export default function Finish() {
             } else if(iMod === 1) { // Drawing
               return <div>
                 <p className="TaskLabel">Drawing by {n}:</p>
-                <MyCanvas drawing={s.drawings[Math.floor(i/2)]} />
+                <MyCanvas drawing={s.drawings[Math.floor(i/2)]} size={canvasSize} />
               </div>;
             } else {
               return <p>renderResults() ERROR</p>;

@@ -1,4 +1,5 @@
 import './Game.css';
+import { useHistory } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import configClient from '../configClient.json';
 import io from 'socket.io-client';
@@ -7,14 +8,16 @@ import MyCanvas from '../components/MyCanvas';
 // const socket = io(configClient.serverUrl);
 export default function Game(props) {
 
+  const history = useHistory();
   const [socket, setSocket] = useState(null);
   const [currentTask, setCurrentTask] = useState(null);
   const [captionText, setCaptionText] = useState("");
   const name = sessionStorage.getItem("name");
+  const canvasSize = Math.min(650, parseInt( (window.innerWidth < 800) ? window.innerWidth*0.90 : window.innerWidth*0.45));
 
   useEffect(() => {
     setSocket(io(configClient.serverUrl));
-    return () => socket.disconnect();
+    // return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
@@ -34,7 +37,8 @@ export default function Game(props) {
     });
     socket.on("gameOver", () => {
       console.log("GAME OVER!");
-      // TODO navigate to a new screen
+      socket.disconnect();
+      history.push("/results");
     });
     socket.on("disconnect", () => {
 
@@ -74,7 +78,7 @@ export default function Game(props) {
     if(currentTask.type === "taskCaption")
       return <div>
           <p>Write a caption for this drawing: </p>
-          <MyCanvas drawing={currentTask.drawing} />
+          <MyCanvas drawing={currentTask.drawing} size={canvasSize} />
           <input id="taskCaption-text" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
           <br />
           <button onClick={() => taskSubmit(captionText)} className="pure-button pure-button-primary">Submit</button>
@@ -84,7 +88,7 @@ export default function Game(props) {
       return <div>
           <p>Make a drawing that has this caption: </p>
           <p><i>{currentTask.caption}</i></p>
-          <MyCanvas onSubmit={(d) => taskSubmit(d)}/>
+          <MyCanvas onSubmit={(d) => taskSubmit(d)} size={canvasSize} />
         </div>;
 
     return <p>No match for task render</p>;

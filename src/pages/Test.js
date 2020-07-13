@@ -12,6 +12,7 @@ export default function Test() {
   // const [color, setColor] = useState("#FF00FF");
   // const height = 500;
   // const width = 500;
+  const canvasSize = Math.min(650, parseInt( (window.innerWidth < 800) ? window.innerWidth*0.90 : window.innerWidth*0.45));
 
   // if(canvas)
   //   console.log(canvas.getData());
@@ -22,7 +23,7 @@ export default function Test() {
   return (
     <div>
       <p>Test page</p>
-      <MyCanvas onSubmit={(d) => console.log(d)}/>
+      <MyCanvas onSubmit={(d) => console.log(d)} size={canvasSize} />
       {/* <CanvasDraw 
         ref={c => (setCanvas(c))}
         brushRadius={radius}
