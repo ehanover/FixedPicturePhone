@@ -1,4 +1,5 @@
 {
-    "clientUrl": "http://192.168.0.225:3000",
-    "roomCode": "ABCD"
-  }
+  "serverPort": 3001,
+  "clientUrl": "http://192.168.0.225:3000",
+  "roomCode": "ABCD"
+}

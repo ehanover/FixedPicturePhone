@@ -27,6 +27,9 @@ class Game {
     return true;
   }
 
+  formatName(name) {
+    return name; // TODO should remove dangerous characters, like emojis?
+  }
   playerAdd(name) {
     // if(this.state !== this.states.WAITING || !this.players.includes(name)) {
     //   return undefined;
@@ -73,7 +76,7 @@ class Game {
         // TODO allow players to contribute multiple times with a setting enabled
       return s.getNextTask(player);
     }
-    console.log("  returning null");
+    // console.log("  returning null");
     return null;
   }
 
@@ -98,7 +101,6 @@ class Game {
 class Player {
   constructor(name, admin) {
     this.name = name;
-    // this.room = room; // TODO unnecessary
     this.admin = admin;
     this.busy = false;
   }
@@ -166,4 +168,4 @@ class TaskSequence {
   }
 }
 
-module.exports = { Game, Player }
+module.exports = { Game }

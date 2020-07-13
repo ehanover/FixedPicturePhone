@@ -1,10 +1,10 @@
-var express = require("express");
 var cors = require("cors");
+var express = require("express");
 var parser = require("body-parser");
-var serverUtil = require("./serverUtil.js");
 var serverConfig = require("./configServer.json");
+var serverUtil = require("./serverUtil.js");
 
-var port = process.env.PORT || 3001;
+var port = process.env.PORT || serverConfig.serverPort;
 var app = express();
 
 // app.use(function (req, res, next) { // enable CORS without external module
@@ -41,15 +41,15 @@ app.get("/info", (req, res) => {
   res.status(200).json(obj);
 });
 
-app.post("/lobbyJoin", (req, res) => { // A player is joining a game
-  let name = req.body.name;
+app.post("/lobbyJoin", (req, res) => {
+  let name = game.formatName(req.body.name);
   let room = req.body.roomCode;
 
   if(roomCode === room) {
     if(game.getPlayerNames().includes(name)) {
       res.status(400).send({"message": "You are not allowed to join that room."});
     } else {
-      res.status(200).send({"message": "OK", "admin": game.isPlayerNameAdmin(name)});
+      res.status(200).send({"message": "OK", "admin": game.isPlayerNameAdmin(name), "nameReturn": name});
     }
   } else { // Room name invalid
     res.status(400).send({"message": "That room code is invalid."});
@@ -60,9 +60,8 @@ app.post("/lobbyJoin", (req, res) => { // A player is joining a game
 app.post("/lobbyFinishRequest", (req, res) => {
   if(!game.startGame(req.body.name)) return; // TODO add other game start checks here
 
-  // console.log("The game is starting");
+  console.log("The game is starting");
   io.sockets.emit("lobbyFinish"); // This redirect users to the /game page
-  // game.generateFirstTasks();
 });
 
 app.get("/results", (req, res) => {

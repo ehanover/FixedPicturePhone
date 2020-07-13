@@ -1,6 +1,4 @@
 import './Home.css';
-// import { Link } from "react-router-dom";
-// import { useCookies } from 'react-cookie';
 import { useHistory } from 'react-router-dom';
 import React, { useState } from 'react';
 import axios from 'axios';
@@ -11,8 +9,6 @@ export default function Home() {
   const history = useHistory();
   const [name, setName] = useState("1");
   const [roomCode, setRoomCode] = useState("ABCD");
-  // const [redirect, setRedirect] = useState(false);
-  // const [cookie, setCookie, removeCookie] = useCookies(); // re-render on every cookie change
 
   function formSubmit(e) {
     e.preventDefault();
@@ -20,13 +16,9 @@ export default function Home() {
     axios.post(clientConfig.serverUrl + "/lobbyJoin", {"name": name, "roomCode": roomCode}
       ).then(res => {
         // console.log("Home.js trying to redirect");
-        // setCookie("name", name);
-        // setCookie("room", roomCode);
-        // setCookie("admin", res.data.admin.toString());
-        sessionStorage.setItem("name", name);
+        sessionStorage.setItem("name", res.data.nameReturn);
         sessionStorage.setItem("admin", res.data.admin.toString());
         history.push("/lobby");
-        // setRedirect(true);
       }).catch(err => {
         if(err.response.status === 400) {
           alert(err.response.data.message);
@@ -36,9 +28,6 @@ export default function Home() {
       }
     );
   }
-
-  // if(redirect)
-  //   return <Redirect to={{"pathname": "/lobby", "state": {"name": name}}} />;
 
   return (
     <div className="Home">
@@ -50,7 +39,7 @@ export default function Home() {
           <label htmlFor="text-name">Name: </label>
           <input type="text" id="text-name" maxLength="10" size="10" 
             value={name}
-            onChange={(e) => setName(e.target.value)} // TODO disallow emojis?
+            onChange={(e) => setName(e.target.value)}
           />
           <br />
 

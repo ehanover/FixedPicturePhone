@@ -17,7 +17,7 @@ export default function Game(props) {
 
   useEffect(() => {
     setSocket(io(configClient.serverUrl));
-    // return () => socket.disconnect();
+    // return () => socket.disconnect(); // This conflicts with manual disconnection
   }, []);
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export default function Game(props) {
     socket.on("disconnect", () => {
 
     });
+  // eslint-disable-next-line
   }, [socket]);
 
   function taskSubmit(data) {
@@ -70,7 +71,7 @@ export default function Game(props) {
     if(currentTask.type === "taskCaptionInitial") 
       return <div>
           <p>Enter a funny caption that someone will have to draw: </p>
-          <input id="taskCaption-text" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
+          <input id="taskCaption-text" className="captionInput" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
           <br />
           <button onClick={() => taskSubmit(captionText)} className="pure-button pure-button-primary">Submit</button>
         </div>;
@@ -79,7 +80,7 @@ export default function Game(props) {
       return <div>
           <p>Write a caption for this drawing: </p>
           <MyCanvas drawing={currentTask.drawing} size={canvasSize} />
-          <input id="taskCaption-text" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
+          <input id="taskCaption-text" className="captionInput" type="text" size="25" onChange={(e) => setCaptionText(e.target.value)} />
           <br />
           <button onClick={() => taskSubmit(captionText)} className="pure-button pure-button-primary">Submit</button>
         </div>;
@@ -91,7 +92,7 @@ export default function Game(props) {
           <MyCanvas onSubmit={(d) => taskSubmit(d)} size={canvasSize} />
         </div>;
 
-    return <p>No match for task render</p>;
+    return <p>ERROR no match for task render</p>;
   }
 
 

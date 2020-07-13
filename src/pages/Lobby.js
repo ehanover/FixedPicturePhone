@@ -43,7 +43,7 @@ export default function Lobby(props) {
     });
     return () => socket.disconnect();
   // eslint-disable-next-line
-  }, [socket]); // is all this running a bunch of times? related to events
+  }, [socket]);
 
   let adminControls;
   if(admin === "true") {

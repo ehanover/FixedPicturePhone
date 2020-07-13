@@ -1,16 +1,12 @@
 import './App.css';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import About from './pages/About.js';
 import Finish from './pages/Finish.js';
 import Game from './pages/Game.js';
 import Home from './pages/Home.js';
 import Lobby from './pages/Lobby.js';
-import Test from './pages/Test.js';
 import React from 'react';
+import Test from './pages/Test.js';
 
 export default function App() {
   return (
