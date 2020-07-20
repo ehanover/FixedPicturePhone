@@ -7,7 +7,7 @@ import clientConfig from '../configClient.json';
 export default function Home() {
 
   const history = useHistory();
-  const [name, setName] = useState("1");
+  const [name, setName] = useState("");
   const [roomCode, setRoomCode] = useState("ABCD");
 
   function formSubmit(e) {

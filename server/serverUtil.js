@@ -1,3 +1,4 @@
+var serverConfig = require("./configServer.json");
 
 class Game {
 
@@ -21,7 +22,7 @@ class Game {
 
     console.log("Starting game with players.length=" + this.players.length);
     for (let i = 0; i < this.players.length; i++) {
-      this.taskSequences[i] = new TaskSequence(this.players.length, i);
+      this.taskSequences[i] = new TaskSequence(this.players.length + serverConfig.sequenceLengthAdder, i);
     }
     this.state = this.states.PLAYING;
     return true;
@@ -50,7 +51,7 @@ class Game {
     return this.players.map(p => p.name);
   }
   isPlayerNameAdmin(name) {
-    return name.includes("1"); // TODO change
+    return name.includes("than"); // TODO change
     // This could instead be the first person to join. Also there should only be one admin
   }
 
@@ -68,12 +69,18 @@ class Game {
         // console.log("  skipping sequence.id=" + s.id + " because done");
         continue;
       }
-      if(s.completers.some(p => p.name === player.name)) {  // Players only contribute once
-        // console.log("  skipping sequence.id=" + s.id + " because I'm a completer");
-        continue;
+
+      if(serverConfig.completerRepeatsAllowed > 0) {
+        if(s.completers.slice(-1 * serverConfig.completerRepeatsPreviousDisallow).some(p => p.name === player.name)) {
+          continue;
+        }
+      } else {
+        if(s.completers.some(p => p.name === player.name)) {  // Players only contribute once
+          // console.log("  skipping sequence.id=" + s.id + " because I'm a completer");
+          continue;
+        }
       }
-        // TODO favor players that aren't busy right now with numTasks. This probably goes in the sort condition a few lines above
-        // TODO allow players to contribute multiple times with a setting enabled
+        // TODO favor players that aren't holding up other players? This probably goes in the sort condition above
       return s.getNextTask(player);
     }
     // console.log("  returning null");

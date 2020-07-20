@@ -38,7 +38,7 @@ export default function Finish() {
                   <p className="TaskLabel">Starting caption by {n}:</p> :
                   <p className="TaskLabel">Caption by {n}:</p>
                 }
-                <p className="TaskCaption">"<i>{s.captions[Math.floor(i/2)]}</i>"</p>
+                <h5 className="TaskCaption">"<i>{s.captions[Math.floor(i/2)]}</i>"</h5>
               </div>;
             } else if(iMod === 1) { // Drawing
               return <div>

@@ -10,7 +10,7 @@ export default function MyCanvas(props) {
   const drawMode = (props.drawing === undefined || props.drawing === null);
   const colorList = ["#000000", "#888888", "#FFFFFF", "#FE2712", "#FB9902", "#FFF832", "#66B032", "#0247FE", "#8601AF", "#FF00FF"];
   const [canvas, setCanvas] = useState(undefined);
-  const [radius, setRadius] = useState(5);
+  const [radius, setRadius] = useState(3);
   const [color, setColor] = useState(colorList[0]);
 
   useEffect(() => {
