@@ -30,11 +30,8 @@ const roomCode = serverConfig.roomCode;
 let game = new serverUtil.Game(roomCode);
 
 
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Hello world" });
-});
 
-app.get("/info", (req, res) => {
+app.get("/debug", (req, res) => { // Note: this is visible from the server port, not the website port
   const obj = {
     "game": game
   };
@@ -59,9 +56,12 @@ app.post("/lobbyJoin", (req, res) => {
 
 app.post("/lobbyFinishRequest", (req, res) => {
   if(!game.startGame(req.body.name)) return; // TODO add other game start checks here
-
+  
   console.log("The game is starting");
+
+  game.state = game.states.PLAYING;
   io.sockets.emit("lobbyFinish"); // This redirect users to the /game page
+  // setTimeout(() => game.state = game.states.PLAYING, 1000);
 });
 
 app.get("/results", (req, res) => {
@@ -81,31 +81,41 @@ io.on("connection", (socket) => {
   let player;
 
 
-  socket.on("lobbyConnect", (data) => {
+  socket.on("lobbyConnect", (data) => { // A new socket connection from Lobby.js
+    if(game.state !== game.states.WAITING)
+      return;
+
     let name = data.name;
     player = game.playerAdd(name)
 
     io.sockets.emit("lobbyUpdate", {players: game.getPlayerNames()});
-    console.log("Users in room: " + game.getPlayerNames());
+    console.log("Player " + player.name + " connected. Users in room: " + game.getPlayerNames());
   });
 
 
-  socket.on("gameConnect", (data) => {
+  socket.on("gameConnect", (data) => { // A new socket connection from Game.js
+    if(game.state !== game.states.PLAYING)
+      return;
+
     let name = data.name;
     player = game.getPlayerByName(name);
+    console.log("Player with name=" + name + " is trying to connect...");
+    console.log("All players: " + game.getPlayerNames());
     if(player === undefined) {
-      console.log("Connect unknown!");
+      console.log("Game connection, player UNKNOWN!");
       return;
     }
-    console.log("Game join name=" + player.name);
+    player.connected = true;
+
+    console.log("Game connection, name=" + player.name);
     socket.emit("gameTaskShouldRequestUpdate");
   });
   socket.on("gameTaskFinish", (data) => {
-    // console.log("gameTaskFinish with name=" + data.name + ", type=" + data.type);
+    console.log("gameTaskFinish with name=" + data.name + ", type=" + data.type);
     player.busy = false;
     const gameOver = game.taskFinish(player, data);
     if(gameOver) {
-      console.log("GAME OVER!");
+      console.log("Game over!");
       io.sockets.emit("gameOver");
     } else {
       io.sockets.emit("gameTaskShouldRequestUpdate") // Tell all players to request a task update
@@ -119,7 +129,6 @@ io.on("connection", (socket) => {
       return;
 
     console.log("Sending a new task to player with name=" + player.name + ", type=" + taskJson.type);
-    // player.numTasks++;
     socket.emit("gameTaskNew", {"name": player.name, "task": taskJson});
     player.busy = true;
   });
@@ -131,14 +140,28 @@ io.on("connection", (socket) => {
       return;
     }
 
-    console.log("Disconnect name=" + player.name);
     if(game.state === game.states.WAITING) {
-      game.playerRemoveByName(player.name)
+      game.playerRemoveByName(player.name);
       io.sockets.emit("lobbyUpdate", {players: game.getPlayerNames()});
       // console.log("Users in room: " + game.getPlayerNames());
+
     } else if(game.state === game.states.PLAYING) {
-      console.log("Disconnect IN GAME!");
-      // TODO handle mid-game disconnections
+      // Make sure people get back into the game
+
+      if(player.connected === false) {
+        console.log("Disconnect in game, but the player wasn't connected before");
+        return;
+      }
+      console.log("Disconnect in game, player=" + player.name);
+      player.busy = false;
+      player.connected = false;
+      
+      let playersOldTask = game.taskSequences.find((s) => (s.completingPlayer !== null) && (s.completingPlayer.name === player.name));
+      if(playersOldTask !== undefined)
+        playersOldTask.inProgress = false;
+
+    } else if(game.state === game.states.OVER) {
+      // Disconnecting is allowed here
     }
   });
 

@@ -20,16 +20,19 @@ class Game {
     if(!this.isPlayerNameAdmin(requesterName) || this.state !== this.states.WAITING)
       return false;
 
+    if(this.players.length <= 1)
+      return false;
+
     console.log("Starting game with players.length=" + this.players.length);
     for (let i = 0; i < this.players.length; i++) {
       this.taskSequences[i] = new TaskSequence(this.players.length + serverConfig.sequenceLengthAdder, i);
     }
-    this.state = this.states.PLAYING;
+    // this.state = this.states.PLAYING; // Moved to server.js to allow for correct transition
     return true;
   }
 
   formatName(name) {
-    return name; // TODO should remove dangerous characters, like emojis?
+    return name.trim(); // TODO should remove dangerous characters, like emojis?
   }
   playerAdd(name) {
     // if(this.state !== this.states.WAITING || !this.players.includes(name)) {
@@ -38,7 +41,7 @@ class Game {
     let admin = this.isPlayerNameAdmin(name);
     let p = new Player(name, admin);
     this.players.push(p);
-    console.log("playerJoin() name=" + name + ", totalplayers=" + this.players.length);
+    // console.log("playerJoin() name=" + name + ", totalplayers=" + this.players.length);
     return p;
   }
   playerRemoveByName(name) {
@@ -70,7 +73,7 @@ class Game {
         continue;
       }
 
-      if(serverConfig.completerRepeatsAllowed > 0) {
+      if(serverConfig.completerRepeatsPreviousDisallow > 0) {
         if(s.completers.slice(-1 * serverConfig.completerRepeatsPreviousDisallow).some(p => p.name === player.name)) {
           continue;
         }
@@ -100,7 +103,6 @@ class Game {
 
   gameOver() {
     this.state = this.states.OVER;
-    // TODO stop the game
   }
 }
 
@@ -110,10 +112,11 @@ class Player {
     this.name = name;
     this.admin = admin;
     this.busy = false;
+    this.connected = false;
   }
 }
 
-class TaskSequence {
+class TaskSequence { // TODO there's a problem with TaskSequences mixing, and some player inputs end up getting lost
   constructor(num, id) {
     this.id = id;
     this.num = num;
@@ -121,11 +124,14 @@ class TaskSequence {
     this.captions = [];
     this.drawings = [];
     this.completers = [];
+
     this.inProgress = false;
+    this.completingPlayer = null;
   }
 
   getNextTask(player) {
-    this.inProgress = true;
+    this.inProgress = true; // This gets set to false if the completing player gets disconnected so the task gets reassigned
+    this.completingPlayer = player;
     console.log("sequence.getNextTask() generating task, id=" + this.id + ", completer names=" + this.completers.map(p => p.name) + ", numDone=" + this.numDone);
     if(this.captions.length === 0 && this.drawings.length === 0) {
       return {
