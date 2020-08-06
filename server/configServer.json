@@ -1,9 +1,9 @@
 {
   "serverPort": 3001,
-  "clientUrl": "http://192.168.0.225:3000",
   "roomCode": "ABCD",
+  "clientUrl": "http://192.168.0.225:3000",
 
-  "sequenceLengthAdder": 1,
-  "completerRepeatsAllowed": 2,
-  "completerRepeatsPreviousDisallow": 3
+  "sequenceLengthAdder": 0,
+  "completerRepeatsPreviousDisallow": -1,
+  "___completerRepeatsAllowed": 0
 }

@@ -15,7 +15,6 @@ var app = express();
 // });
 
 app.use(cors({
-  // origin: "http://192.168.0.225:3000" // TODO move to serverConfig.json
   origin: serverConfig.clientUrl
 }));
 app.use(parser.urlencoded({ extended: true })); // parse application/x-www-form-urlencoded
@@ -61,7 +60,6 @@ app.post("/lobbyFinishRequest", (req, res) => {
 
   game.state = game.states.PLAYING;
   io.sockets.emit("lobbyFinish"); // This redirect users to the /game page
-  // setTimeout(() => game.state = game.states.PLAYING, 1000);
 });
 
 app.get("/results", (req, res) => {

@@ -27,12 +27,11 @@ class Game {
     for (let i = 0; i < this.players.length; i++) {
       this.taskSequences[i] = new TaskSequence(this.players.length + serverConfig.sequenceLengthAdder, i);
     }
-    // this.state = this.states.PLAYING; // Moved to server.js to allow for correct transition
     return true;
   }
 
   formatName(name) {
-    return name.trim(); // TODO should remove dangerous characters, like emojis?
+    return name.trim();
   }
   playerAdd(name) {
     // if(this.state !== this.states.WAITING || !this.players.includes(name)) {
@@ -54,7 +53,7 @@ class Game {
     return this.players.map(p => p.name);
   }
   isPlayerNameAdmin(name) {
-    return name.includes("than"); // TODO change
+    return name.toLowerCase().includes("ethan"); // TODO change the admin name
     // This could instead be the first person to join. Also there should only be one admin
   }
 
@@ -144,7 +143,7 @@ class TaskSequence { // TODO there's a problem with TaskSequences mixing, and so
         "type": "taskCaption",
         "drawing": this.drawings[this.drawings.length - 1],
       };
-    } else { // if(this.captions.length ??? this.drawings.length) {
+    } else {
       return {
         "id": this.id,
         "type": "taskDraw",
