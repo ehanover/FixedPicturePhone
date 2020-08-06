@@ -1,6 +1,6 @@
 import './Lobby.css';
 // import { useCookies } from 'react-cookie';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import clientConfig from '../configClient.json';
@@ -9,7 +9,7 @@ import io from 'socket.io-client';
 
 export default function Lobby(props) {
 
-  const history = useHistory();
+  // const history = useHistory();
   // eslint-disable-next-line
   // const [cookie, setCookie, removeCookie] = useCookies();
   const [socket, setSocket] = useState(null);
@@ -35,8 +35,10 @@ export default function Lobby(props) {
     });
     socket.on("lobbyFinish", (data) => {
       // console.log("game is starting");
+      // setTimeout(() => socket.disconnect(), 500);
       socket.disconnect();
-      history.push("/game")
+      // history.push("/game");
+      window.location = "game";
     });
     socket.on("disconnect", () => {
 
@@ -61,7 +63,7 @@ export default function Lobby(props) {
       <h3>Players in the lobby:</h3>
       <ul>
         {players.map((p, i) => 
-          <li key={i}>{p}</li>
+          <li key={i} className="PlayerName">{p}</li>
         )}
       </ul>
       <br />

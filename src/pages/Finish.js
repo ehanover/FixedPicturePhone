@@ -29,20 +29,20 @@ export default function Finish() {
       {results.taskSequences.map(function (s, i) {
         return <div key={i}>
           <hr />
-          <h3>Book #{i+1}</h3>
+          <h2>Book #{i+1}</h2>
           {s.completerNames.map(function (n, i) {
             let iMod = i % 2;
             if(iMod === 0) { // Caption
               return <div>
                 {i === 0 ? 
-                  <p className="TaskLabel">Starting caption by {n}:</p> :
-                  <p className="TaskLabel">Caption by {n}:</p>
+                  <p className="TaskLabel">Starting caption by <span className="PlayerName">{n}</span>:</p> : 
+                  <p className="TaskLabel">Caption by <span className="PlayerName">{n}</span>:</p>
                 }
-                <h5 className="TaskCaption">"<i>{s.captions[Math.floor(i/2)]}</i>"</h5>
+                <h3 className="TaskCaption">"<i>{s.captions[Math.floor(i/2)]}</i>"</h3>
               </div>;
             } else if(iMod === 1) { // Drawing
               return <div>
-                <p className="TaskLabel">Drawing by {n}:</p>
+                <p className="TaskLabel">Drawing by <span className="PlayerName">{n}</span>:</p>
                 <MyCanvas drawing={s.drawings[Math.floor(i/2)]} size={canvasSize} />
               </div>;
             } else {

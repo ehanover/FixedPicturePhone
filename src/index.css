@@ -13,6 +13,10 @@ body {
   font-size: x-large;
 }
 
+.PlayerName {
+  color: #00488d
+}
+
 @media all and (max-width: 800px) {
   body {
     font-size: large;

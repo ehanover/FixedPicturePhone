@@ -8,7 +8,7 @@ export default function MyCanvas(props) {
   const width = props.size;
   const height = width;
   const drawMode = (props.drawing === undefined || props.drawing === null);
-  const colorList = ["#000000", "#888888", "#FFFFFF", "#FE2712", "#FB9902", "#FFF832", "#66B032", "#0247FE", "#8601AF", "#FF00FF"];
+  const colorList = ["#000000", "#888888", "#FFFFFF", "#874415", "#FE2712", "#FB9902", "#FFF832", "#66B032", "#27dfe5", "#0247FE", "#8601AF", "#FF00FF"];
   const [canvas, setCanvas] = useState(undefined);
   const [radius, setRadius] = useState(3);
   const [color, setColor] = useState(colorList[0]);
@@ -65,10 +65,12 @@ export default function MyCanvas(props) {
             <br />
             <div className="pure-g">
               {colorList.map((c, i) => colorButton(c, i))}
-              <div className="pure-u-14-24">
+              <div className="pure-u-12-24 controlSliderParent">
                 <input type="range" min="2" max="40" onChange={(e) => setRadius(parseInt(e.target.value))} value={radius} className="controlSlider"/>
               </div>
-
+            </div>
+            
+            <div className="pure-g">
               <div className="pure-u-1-2">
                 <button className="pure-button" onClick={() => canvas.clear()}>Clear</button>
               </div>

@@ -1,5 +1,5 @@
 import './Game.css';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import configClient from '../configClient.json';
 import io from 'socket.io-client';
@@ -8,7 +8,7 @@ import MyCanvas from '../components/MyCanvas';
 // const socket = io(configClient.serverUrl);
 export default function Game(props) {
 
-  const history = useHistory();
+  // const history = useHistory();
   const [socket, setSocket] = useState(null);
   const [currentTask, setCurrentTask] = useState(null);
   const [captionText, setCaptionText] = useState("");
@@ -17,7 +17,8 @@ export default function Game(props) {
 
   useEffect(() => {
     setSocket(io(configClient.serverUrl));
-    // return () => socket.disconnect(); // This conflicts with manual disconnection
+    // return () => ((socket !== null) ? socket.disconnect() : null); // This conflicts with manual disconnection
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
@@ -25,7 +26,10 @@ export default function Game(props) {
     // console.log("useEffect() socket binding, currentTask=" + currentTask);
 
     socket.on("connect", () => {
+      // console.log("waiting for gameConnect");
+      // setTimeout(() => socket.emit("gameConnect", {"name": name}), 100);
       socket.emit("gameConnect", {"name": name});
+      // console.log("done with gameConnect");
     });
     socket.on("gameTaskNew", (data) => {
       console.log("socket updating currentTask");
@@ -37,14 +41,17 @@ export default function Game(props) {
     });
     socket.on("gameOver", () => {
       console.log("GAME OVER!");
-      socket.disconnect();
-      history.push("/results");
+      // socket.disconnect();
+      // history.push("/results");
+      // window.location.replace("/results");
+      window.location = "/results";
     });
     socket.on("disconnect", () => {
 
     });
   // eslint-disable-next-line
   }, [socket]);
+
 
   function taskSubmit(data) {
     let taskToSubmit = currentTask;
